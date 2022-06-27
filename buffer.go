@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"vimagination.zapto.org/httpencoding"
-	"vimagination.zapto.org/memio"
 )
 
 var isGzip = httpencoding.HandlerFunc(func(enc httpencoding.Encoding) bool { return enc == "gzip" })
@@ -33,12 +32,12 @@ func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // a last modified data, and turns it into a handler that will detect whether
 // the client can handle the compressed data and send the data accordingly.
 func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler {
-	uncompressed := make(memio.Buffer, 0, size)
-	g, err := gzip.NewReader(&uncompressed)
+	g, err := gzip.NewReader(bytes.NewReader(compressed))
 	if err != nil {
 		panic(err)
 	}
-	if _, err := g.Read(compressed); err != nil {
+	uncompressed := make([]byte, 0, size)
+	if _, err := g.Read(uncompressed); err != nil {
 		panic(err)
 	}
 	return &buffers{
