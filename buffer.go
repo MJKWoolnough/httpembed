@@ -1,3 +1,4 @@
+// Package httpembed aids with handling compressed 'embed' buffers, turning them into HTTP Handlers
 package httpembed
 
 import (
@@ -28,6 +29,9 @@ func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, "index.html", b.modTime, br)
 }
 
+// HandleBuffer takes a gzip compressed data buffer, its decompressed size, and
+// a last modified data, and turns it into a handler that will detect whether
+// the client can handle the compressed data and send the data accordingly.
 func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler {
 	uncompressed := make(memio.Buffer, 0, size)
 	g, err := gzip.NewReader(&uncompressed)
