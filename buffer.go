@@ -36,7 +36,7 @@ func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler {
 	if err != nil {
 		panic(err)
 	}
-	uncompressed := make([]byte, 0, size)
+	uncompressed := make([]byte, size)
 	if _, err := g.Read(uncompressed); err != nil {
 		panic(err)
 	}
