@@ -4,6 +4,7 @@ package httpembed
 import (
 	"bytes"
 	"compress/gzip"
+	"io"
 	"net/http"
 	"time"
 
@@ -37,7 +38,7 @@ func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler {
 		panic(err)
 	}
 	uncompressed := make([]byte, size)
-	if _, err := g.Read(uncompressed); err != nil {
+	if n, err := g.Read(uncompressed); err != io.EOF && n != size {
 		panic(err)
 	}
 	return &buffers{
