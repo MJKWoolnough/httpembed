@@ -21,7 +21,9 @@ func TestBuffer(t *testing.T) {
 	} {
 		buf.Reset()
 		gz.Reset(&buf)
-		io.WriteString(gz, test)
+		if _, err := io.WriteString(gz, test); err != nil {
+			t.Fatalf("test %d: unexpected error: %s", n+1, err)
+		}
 		gz.Flush()
 		bs := buf.Bytes()
 		h := HandleBuffer(bs, len(test), time.Now())
