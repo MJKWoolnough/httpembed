@@ -15,3 +15,6 @@ func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) h
 HandleBuffer takes filename, a gzip compressed data buffer, its decompressed
 size, and a last modified date, and turns it into a handler that will detect
 whether the client can handle the compressed data and send the data accordingly.
+
+If the decompressed size is 0, the decomplress buffer will be dynamically
+allocated.
