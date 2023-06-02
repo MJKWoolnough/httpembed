@@ -24,7 +24,7 @@ func TestBuffer(t *testing.T) {
 		if _, err := io.WriteString(gz, test); err != nil {
 			t.Fatalf("test %d: unexpected error: %s", n+1, err)
 		}
-		gz.Flush()
+		gz.Close()
 		bs := buf.Bytes()
 		h := HandleBuffer("data.txt", bs, len(test), time.Now())
 		w := httptest.NewRecorder()
