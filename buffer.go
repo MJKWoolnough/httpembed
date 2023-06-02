@@ -34,14 +34,25 @@ func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // size, and a last modified date, and turns it into a handler that will detect
 // whether the client can handle the compressed data and send the data
 // accordingly.
+//
+// If the decompressed size is 0, the decomplress buffer will be dynamically
+// allocated.
 func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) http.Handler {
 	g, err := gzip.NewReader(bytes.NewReader(compressed))
 	if err != nil {
 		panic(err)
 	}
-	uncompressed := make([]byte, size)
-	if n, err := io.ReadFull(g, uncompressed); n != size {
-		panic(err)
+	var uncompressed []byte
+	if size == 0 {
+		uncompressed, err = io.ReadAll(g)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		uncompressed = make([]byte, size)
+		if n, err := io.ReadFull(g, uncompressed); n != size {
+			panic(err)
+		}
 	}
 	return &buffers{
 		name:         name,
