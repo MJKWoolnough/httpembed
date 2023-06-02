@@ -26,7 +26,7 @@ func TestBuffer(t *testing.T) {
 		}
 		gz.Flush()
 		bs := buf.Bytes()
-		h := HandleBuffer(bs, len(test), time.Now())
+		h := HandleBuffer("data.txt", bs, len(test), time.Now())
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/file", nil)
 		h.ServeHTTP(w, r)
