@@ -10,8 +10,8 @@ into HTTP Handlers
 #### func  HandleBuffer
 
 ```go
-func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler
+func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) http.Handler
 ```
-HandleBuffer takes a gzip compressed data buffer, its decompressed size, and a
-last modified date, and turns it into a handler that will detect whether the
-client can handle the compressed data and send the data accordingly.
+HandleBuffer takes filename, a gzip compressed data buffer, its decompressed
+size, and a last modified date, and turns it into a handler that will detect
+whether the client can handle the compressed data and send the data accordingly.
