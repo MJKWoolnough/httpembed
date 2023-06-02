@@ -14,6 +14,7 @@ import (
 var isGzip = httpencoding.HandlerFunc(func(enc httpencoding.Encoding) bool { return enc == "gzip" })
 
 type buffers struct {
+	name                     string
 	compressed, uncompressed []byte
 	modTime                  time.Time
 }
@@ -26,13 +27,14 @@ func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		br = bytes.NewReader(b.uncompressed)
 	}
-	http.ServeContent(w, r, "index.html", b.modTime, br)
+	http.ServeContent(w, r, b.name, b.modTime, br)
 }
 
-// HandleBuffer takes a gzip compressed data buffer, its decompressed size, and
-// a last modified date, and turns it into a handler that will detect whether
-// the client can handle the compressed data and send the data accordingly.
-func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler {
+// HandleBuffer takes filename, a gzip compressed data buffer, its decompressed
+// size, and a last modified date, and turns it into a handler that will detect
+// whether the client can handle the compressed data and send the data
+// accordingly.
+func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) http.Handler {
 	g, err := gzip.NewReader(bytes.NewReader(compressed))
 	if err != nil {
 		panic(err)
@@ -42,6 +44,7 @@ func HandleBuffer(compressed []byte, size int, lastMod time.Time) http.Handler {
 		panic(err)
 	}
 	return &buffers{
+		name:         name,
 		compressed:   compressed,
 		uncompressed: uncompressed,
 		modTime:      lastMod,
