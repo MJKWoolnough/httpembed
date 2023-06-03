@@ -30,12 +30,12 @@ func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, b.name, b.modTime, br)
 }
 
-// HandleBuffer takes filename, a gzip compressed data buffer, its decompressed
+// HandleBuffer takes filename, a gzip compressed data buffer, its uncompressed
 // size, and a last modified date, and turns it into a handler that will detect
 // whether the client can handle the compressed data and send the data
 // accordingly.
 //
-// If the decompressed size is 0, the decomplress buffer will be dynamically
+// If the uncompressed size is 0, the decompress buffer will be dynamically
 // allocated.
 func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) http.Handler {
 	g, err := gzip.NewReader(bytes.NewReader(compressed))
