@@ -61,3 +61,20 @@ func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) h
 		modTime:      lastMod,
 	}
 }
+
+func HandleReader(name string, r io.Reader, compressedSize, uncompressedSize int, lastMod time.Time) http.Handler {
+	var (
+		compressed []byte
+		err        error
+	)
+	if compressedSize == 0 {
+		compressed, err = io.ReadAll(r)
+	} else {
+		compressed = make([]byte, compressedSize)
+		_, err = io.ReadFull(r, compressed)
+	}
+	if err != nil {
+		panic(err)
+	}
+	return HandleBuffer(name, compressed, uncompressedSize, lastMod)
+}
