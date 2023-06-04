@@ -2,10 +2,23 @@
 --
     import "vimagination.zapto.org/httpembed"
 
-Package httpembed aids with handling compressed 'embed' buffers, turning them
-into HTTP Handlers
+Package httpembed aids with handling compressed 'embed' buffers and FSs, turning
+them into HTTP Handlers
 
 ## Usage
+
+```go
+var ErrNotFound = errors.New("file not found")
+```
+
+#### func  DecompressFS
+
+```go
+func DecompressFS(files fs.FS) (fs.FS, error)
+```
+DecompressFS takes a FS with compressed (.gz) files and returns a new FS with
+those files decompressed and store under the same name with the .gz suffix
+removed.
 
 #### func  HandleBuffer
 
