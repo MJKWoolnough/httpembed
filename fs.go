@@ -44,11 +44,11 @@ func (f *file) Read(p []byte) (int, error) {
 func (f *file) Seek(offset int64, whence int) (int64, error) {
 	switch whence {
 	case io.SeekStart:
-		f.pos = whence
+		f.pos = int(offset)
 	case io.SeekCurrent:
-		f.pos += whence
+		f.pos += int(offset)
 	case io.SeekEnd:
-		f.pos = len(f.data) + whence
+		f.pos = len(f.data) + int(offset)
 	}
 	return int64(f.pos), nil
 }
