@@ -1,4 +1,4 @@
-// Package httpembed aids with handling compressed 'embed' buffers, turning them into HTTP Handlers
+// Package httpembed aids with handling compressed 'embed' buffers and FSs, turning them into HTTP Handlers
 package httpembed
 
 import (
