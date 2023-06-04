@@ -1,10 +1,25 @@
 package httpembed
 
 import (
+	"errors"
 	"io"
 	"io/fs"
 	"time"
 )
+
+var ErrNotFound = errors.New("file not found")
+
+type decompressedFS struct {
+	files map[string]file
+}
+
+func (d *decompressedFS) Open(name string) (fs.File, error) {
+	f, ok := d.files[name]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return &f, nil
+}
 
 type file struct {
 	name    string
