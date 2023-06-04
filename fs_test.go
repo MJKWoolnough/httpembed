@@ -91,8 +91,8 @@ func TestFiles(t *testing.T) {
 
 	n, err = a.Read(buf)
 
-	if !errors.Is(err, io.ErrUnexpectedEOF) {
-		t.Errorf("test 14: expected error ErrUnexpectedEOF, got: %s", err)
+	if !errors.Is(err, io.EOF) {
+		t.Errorf("test 14: expected error EOF, got: %s", err)
 		return
 	} else if n != 0 {
 		t.Errorf("test 15: expecting to read 0 bytes, read %d", n)
