@@ -33,6 +33,9 @@ func (f *file) Stat() (fs.FileInfo, error) {
 }
 
 func (f *file) Read(p []byte) (int, error) {
+	if f.pos >= len(f.data) {
+		return 0, io.ErrUnexpectedEOF
+	}
 	n := copy(p, f.data[f.pos:])
 	f.pos += n
 	return n, nil
