@@ -1,9 +1,11 @@
 package httpembed
 
 import (
+	"compress/gzip"
 	"errors"
 	"io"
 	"io/fs"
+	"strings"
 	"time"
 )
 
@@ -80,4 +82,55 @@ func (f *file) IsDir() bool {
 
 func (f *file) Sys() any {
 	return f
+}
+
+// DecompressFS takes a FS with compressed (.gz) files and returns a new FS with
+// those files decompressed and store under the same name with the .gz suffix
+// removed.
+func DecompressFS(files fs.FS) (fs.FS, error) {
+	g := new(gzip.Reader)
+	h := make(map[string]file)
+
+	if err := fs.WalkDir(files, "/", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		name := d.Name()
+		if !d.Type().IsRegular() || !strings.HasSuffix(name, ".gz") {
+			return nil
+		}
+
+		f, err := files.Open(path)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+
+		if err = g.Reset(f); err != nil {
+			return err
+		}
+
+		buf, err := io.ReadAll(g)
+		if err != nil {
+			return err
+		}
+
+		info, err := f.Stat()
+		if err != nil {
+			return err
+		}
+
+		h[path] = file{
+			name:    strings.TrimSuffix(name, ".gz"),
+			data:    buf,
+			modTime: info.ModTime(),
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	return &decompressedFS{files: h}, nil
 }
