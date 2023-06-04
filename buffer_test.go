@@ -10,25 +10,38 @@ import (
 	"time"
 )
 
+type compressor struct {
+	buf bytes.Buffer
+	gz  gzip.Writer
+}
+
+func (c *compressor) Compress(str string) ([]byte, error) {
+	c.buf.Reset()
+	c.gz.Reset(&c.buf)
+	_, err := io.WriteString(&c.gz, str)
+	if err != nil {
+		return nil, err
+	}
+	c.gz.Close()
+
+	return c.buf.Bytes(), nil
+}
+
 func test(t *testing.T, fn func(test string, buf *bytes.Buffer) http.Handler) {
 	t.Helper()
-	var (
-		buf bytes.Buffer
-		gz  = gzip.NewWriter(&buf)
-	)
+
+	c := new(compressor)
+
 	for n, test := range [...]string{
 		"HELLO",
 		"Hello, World!",
 		"Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!  Long!",
 	} {
-		buf.Reset()
-		gz.Reset(&buf)
-		if _, err := io.WriteString(gz, test); err != nil {
+		bs, err := c.Compress(test)
+		if err != nil {
 			t.Fatalf("test %d: unexpected error: %s", n+1, err)
 		}
-		gz.Close()
-		bs := buf.Bytes()
-		h := fn(test, &buf)
+		h := fn(test, &c.buf)
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/file", nil)
 		h.ServeHTTP(w, r)
