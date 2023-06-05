@@ -18,11 +18,13 @@ type compressor struct {
 func (c *compressor) Compress(str string) ([]byte, error) {
 	c.buf.Reset()
 	c.gz.Reset(&c.buf)
-	_, err := io.WriteString(&c.gz, str)
-	if err != nil {
+	if _, err := io.WriteString(&c.gz, str); err != nil {
 		return nil, err
 	}
-	c.gz.Close()
+
+	if err := c.gz.Close(); err != nil {
+		return nil, err
+	}
 
 	return c.buf.Bytes(), nil
 }
