@@ -20,6 +20,8 @@ DecompressFS takes a FS with compressed (.gz) files and returns a new FS with
 those files decompressed and store under the same name with the .gz suffix
 removed.
 
+The output of this is intended to be use with httpgzip.FileServer.
+
 #### func  HandleBuffer
 
 ```go
