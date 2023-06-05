@@ -122,7 +122,7 @@ func DecompressFS(files fs.FS) (fs.FS, error) {
 			return err
 		}
 
-		h[path] = file{
+		h[strings.TrimSuffix(path, ".gz")] = file{
 			name:    strings.TrimSuffix(name, ".gz"),
 			data:    buf,
 			modTime: info.ModTime(),
