@@ -87,6 +87,8 @@ func (f *file) Sys() any {
 // DecompressFS takes a FS with compressed (.gz) files and returns a new FS with
 // those files decompressed and store under the same name with the .gz suffix
 // removed.
+//
+// The output of this is intended to be use with httpgzip.FileServer.
 func DecompressFS(files fs.FS) (fs.FS, error) {
 	g := new(gzip.Reader)
 	h := make(map[string]file)
