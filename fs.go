@@ -91,7 +91,7 @@ func DecompressFS(files fs.FS) (fs.FS, error) {
 	g := new(gzip.Reader)
 	h := make(map[string]file)
 
-	if err := fs.WalkDir(files, "/", func(path string, d fs.DirEntry, err error) error {
+	if err := fs.WalkDir(files, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
