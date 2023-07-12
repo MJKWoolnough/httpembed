@@ -1,2 +1,4 @@
 vimagination.zapto.org/httpencoding v1.0.0 h1:sSibnPq1pKROK4IBTNNCAKRPCijIZAaMQUBf/Mn5GA0=
 vimagination.zapto.org/httpencoding v1.0.0/go.mod h1:J2hxhPn3VjWestQQ036OYpDwwerfvIHmbtmTqpKVe0w=
+vimagination.zapto.org/memfs v1.0.0 h1:uOami0c0ZGYiMe7yy2T78xwe39cL4kQXXgrjCqdDN+Y=
+vimagination.zapto.org/memfs v1.0.0/go.mod h1:7nxyPwJQ5H79BQrz2j1mPE4Bx0jo8QUsZfD2sZtFACA=
