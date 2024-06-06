@@ -1,4 +1,4 @@
-// Package httpembed aids with handling compressed 'embed' buffers and FSs, turning them into HTTP Handlers
+// Package httpembed aids with handling compressed 'embed' buffers and FSs, turning them into HTTP Handlers.
 package httpembed
 
 import (
@@ -21,12 +21,15 @@ type buffers struct {
 
 func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var br *bytes.Reader
+
 	if httpencoding.HandleEncoding(r, isGzip) {
 		br = bytes.NewReader(b.compressed)
+
 		w.Header().Add("Content-Encoding", "gzip")
 	} else {
 		br = bytes.NewReader(b.uncompressed)
 	}
+
 	http.ServeContent(w, r, b.name, b.modTime, br)
 }
 
@@ -42,18 +45,21 @@ func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) h
 	if err != nil {
 		panic(err)
 	}
+
 	var uncompressed []byte
+
 	if size == 0 {
-		uncompressed, err = io.ReadAll(g)
-		if err != nil {
+		if uncompressed, err = io.ReadAll(g); err != nil {
 			panic(err)
 		}
 	} else {
 		uncompressed = make([]byte, size)
+
 		if n, err := io.ReadFull(g, uncompressed); n != size {
 			panic(err)
 		}
 	}
+
 	return &buffers{
 		name:         name,
 		compressed:   compressed,
@@ -74,14 +80,17 @@ func HandleReader(name string, r io.Reader, compressedSize, uncompressedSize int
 		compressed []byte
 		err        error
 	)
+
 	if compressedSize == 0 {
 		compressed, err = io.ReadAll(r)
 	} else {
 		compressed = make([]byte, compressedSize)
 		_, err = io.ReadFull(r, compressed)
 	}
+
 	if err != nil {
 		panic(err)
 	}
+
 	return HandleBuffer(name, compressed, uncompressedSize, lastMod)
 }
