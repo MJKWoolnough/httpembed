@@ -3,13 +3,9 @@
     import "vimagination.zapto.org/httpembed"
 
 Package httpembed aids with handling compressed 'embed' buffers and FSs, turning
-them into HTTP Handlers
+them into HTTP Handlers.
 
 ## Usage
-
-```go
-var ErrNotFound = errors.New("file not found")
-```
 
 #### func  DecompressFS
 
