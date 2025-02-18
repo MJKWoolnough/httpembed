@@ -1,5 +1,5 @@
 // Package httpembed aids with handling compressed 'embed' buffers and FSs, turning them into HTTP Handlers.
-package httpembed
+package httpembed // import "vimagination.zapto.org/python"
 
 import (
 	"bytes"
