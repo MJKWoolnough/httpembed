@@ -13,7 +13,7 @@ them into HTTP Handlers.
 func DecompressFS(files fs.FS) (fs.FS, error)
 ```
 DecompressFS takes a FS with compressed (.gz) files and returns a new FS with
-those files decompressed and store under the same name with the .gz suffix
+those files decompressed and stored under the same name with the .gz suffix
 removed.
 
 The output of this is intended to be use with httpgzip.FileServer.
