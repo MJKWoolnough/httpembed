@@ -3,6 +3,7 @@ package httpembed
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -18,6 +19,7 @@ type compressor struct {
 func (c *compressor) Compress(str string) ([]byte, error) {
 	c.buf.Reset()
 	c.gz.Reset(&c.buf)
+
 	if _, err := io.WriteString(&c.gz, str); err != nil {
 		return nil, err
 	}
@@ -43,27 +45,40 @@ func test(t *testing.T, fn func(test string, buf *bytes.Buffer) http.Handler) {
 		if err != nil {
 			t.Fatalf("test %d: unexpected error: %s", n+1, err)
 		}
+
 		h := fn(test, &c.buf)
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/file", nil)
+
+		r.Header.Set("Accept-Encoding", "identity")
 		h.ServeHTTP(w, r)
-		res := w.Result()
-		b, err := io.ReadAll(res.Body)
-		if err != nil {
+
+		if res := w.Result(); res.StatusCode != http.StatusOK {
+			t.Errorf("test %d.1: expecting code %v, got %v", n+1, http.StatusOK, res.StatusCode)
+
+			continue
+		} else if b, err := io.ReadAll(res.Body); err != nil {
 			t.Errorf("test %d.1: unexpected error: %s", n+1, err)
+
 			continue
 		} else if res.ContentLength != int64(len(test)) {
-			t.Errorf("test %d.1: expecting to read %d bytes, read %d", n+1, len(test), r.ContentLength)
+			fmt.Println(res.ContentLength)
+			t.Errorf("test %d.1: expecting to read %d bytes, read %d", n+1, len(test), res.ContentLength)
+
 			continue
 		} else if string(b) != test {
 			t.Errorf("test %d.1: expecting to read %q, got %q", n+1, test, b)
+
 			continue
 		}
+
 		r.Header.Set("Accept-Encoding", "gzip")
+
 		w = httptest.NewRecorder()
+
 		h.ServeHTTP(w, r)
-		b, err = io.ReadAll(w.Result().Body)
-		if err != nil {
+
+		if b, err := io.ReadAll(w.Result().Body); err != nil {
 			t.Errorf("test %d.2: unexpected error: %s", n+1, err)
 		} else if !bytes.Equal(b, bs) {
 			t.Errorf("test %d.2: expecting to read %v, got %v", n+1, bs, b)
