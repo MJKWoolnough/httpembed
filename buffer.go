@@ -6,12 +6,23 @@ import (
 	"compress/gzip"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	"vimagination.zapto.org/httpencoding"
 )
 
-var isGzip = httpencoding.HandlerFunc(func(enc httpencoding.Encoding) bool { return enc == "gzip" })
+type requestGzip bool
+
+func (r *requestGzip) Handle(enc httpencoding.Encoding) bool {
+	if enc == "gzip" || httpencoding.IsWildcard(enc) && !httpencoding.IsDisallowedInWildcard(enc, "gzip") {
+		*r = true
+
+		return true
+	}
+
+	return enc == "" || httpencoding.IsWildcard(enc) && !httpencoding.IsDisallowedInWildcard(enc, "")
+}
 
 type buffers struct {
 	name                     string
@@ -20,17 +31,43 @@ type buffers struct {
 }
 
 func (b *buffers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var br *bytes.Reader
+	var (
+		br          *bytes.Reader
+		requestGzip requestGzip
+	)
 
-	if httpencoding.HandleEncoding(r, isGzip) {
-		br = bytes.NewReader(b.compressed)
+	if !httpencoding.HandleEncoding(r, &requestGzip) {
+		httpencoding.InvalidEncoding(w)
 
+		return
+	}
+
+	if requestGzip {
 		w.Header().Add("Content-Encoding", "gzip")
+
+		br = bytes.NewReader(b.compressed)
+		w = &wrapResponseWriter{
+			ResponseWriter: w,
+			size:           int64(len(b.compressed)),
+		}
 	} else {
 		br = bytes.NewReader(b.uncompressed)
 	}
 
 	http.ServeContent(w, r, b.name, b.modTime, br)
+}
+
+type wrapResponseWriter struct {
+	http.ResponseWriter
+	size int64
+}
+
+func (w *wrapResponseWriter) WriteHeader(code int) {
+	if w.Header().Get("Content-Length") == "" {
+		w.Header().Set("Content-Length", strconv.FormatInt(w.size, 10))
+	}
+
+	w.ResponseWriter.WriteHeader(code)
 }
 
 // HandleBuffer takes filename, a gzip compressed data buffer, its uncompressed
