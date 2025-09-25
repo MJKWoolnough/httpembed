@@ -1,44 +1,55 @@
 # httpembed
+
+[![CI](https://github.com/MJKWoolnough/httpembed/actions/workflows/go-checks.yml/badge.svg)](https://github.com/MJKWoolnough/httpembed/actions)
+[![Go Reference](https://pkg.go.dev/badge/vimagination.zapto.org/httpembed.svg)](https://pkg.go.dev/vimagination.zapto.org/httpembed)
+[![Go Report Card](https://goreportcard.com/badge/vimagination.zapto.org/httpembed)](https://goreportcard.com/report/vimagination.zapto.org/httpembed)
+
 --
     import "vimagination.zapto.org/httpembed"
 
-Package httpembed aids with handling compressed 'embed' buffers and FSs, turning
-them into HTTP Handlers.
+Package httpembed aids with handling compressed 'embed' buffers and FSs, turning them into HTTP Handlers.
+
+## Highlights
+
+ - `HandleBuffer` function to automatically decompress gzip'd data into an HTTP Handler that will automatically server either compressed or decompressed data based on `Accept-Encoding` header.
+ - `DecompressFS` function that decompresses gzip files in a `fs.FS` into a new `fs.FS`. Can be combined with `vimagination.zapto.org/httpgzip` to automatically server compressed or decompressed data based on `Accept-Encoding` header.
 
 ## Usage
 
-#### func  DecompressFS
-
 ```go
-func DecompressFS(files fs.FS) (fs.FS, error)
+package main
+
+import (
+	_ "embed"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"time"
+
+	"vimagination.zapto.org/httpembed"
+)
+
+//go:embed hw.gz
+var data []byte
+
+func main() {
+	handler := httpembed.HandleBuffer("hw", data, 14, time.Now())
+
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest(http.MethodGet, "/", nil)
+	r.Header.Set("Accept-encoding", "identity")
+
+	handler.ServeHTTP(w, r)
+
+	fmt.Println(w.Body)
+
+	// Output:
+	// Hello, World!
+}
 ```
-DecompressFS takes a FS with compressed (.gz) files and returns a new FS with
-those files decompressed and stored under the same name with the .gz suffix
-removed.
 
-The output of this is intended to be use with httpgzip.FileServer.
+## Documentation
 
-#### func  HandleBuffer
+Full API docs can be found at:
 
-```go
-func HandleBuffer(name string, compressed []byte, size int, lastMod time.Time) http.Handler
-```
-HandleBuffer takes filename, a gzip compressed data buffer, its uncompressed
-size, and a last modified date, and turns it into a handler that will detect
-whether the client can handle the compressed data and send the data accordingly.
-
-If the uncompressed size is 0, the decompress buffer will be dynamically
-allocated.
-
-#### func  HandleReader
-
-```go
-func HandleReader(name string, r io.Reader, compressedSize, uncompressedSize int, lastMod time.Time) http.Handler
-```
-HandleReader takes filename, a gzip compressed data buffer, its compressed and
-uncompressed size, and a last modified date, and turns it into a handler that
-will detect whether the client can handle the compressed data and send the data
-accordingly.
-
-If the either the compressed size or uncompressed size is 0, the buffers will be
-dynamically allocated.
+https://pkg.go.dev/vimagination.zapto.org/httpembed
